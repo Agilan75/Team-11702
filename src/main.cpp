@@ -146,6 +146,25 @@ void opcontrol() {
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         chassis.arcade(leftY, rightX);
 
+
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+            clamp.extend();
+        } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+            clamp.retract();
+        }
+
+        pros::delay(10);
+
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+            intake.spin_forward(); 
+        } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+            intake.spin_reverse();
+        } else {
+            intake.stop();
+        }
+
+        pros::delay(10);
+
         // Continuously display sensor data
         pros::lcd::print(0, "Distance: %d mm", distanceSensor.get());
         pros::lcd::print(1, "Optical Hue: %.2f", opticalSensor.get_hue());
