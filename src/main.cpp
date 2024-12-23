@@ -165,6 +165,16 @@ void opcontrol() {
 
         pros::delay(10);
 
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+            lift.move_up(); // Move lift up
+        } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+            lift.move_down(); // Move lift down
+        } else {
+            lift.stop(); // Stop lift
+        }
+
+        pros::delay(10);
+
         // Continuously display sensor data
         pros::lcd::print(0, "Distance: %d mm", distanceSensor.get());
         pros::lcd::print(1, "Optical Hue: %.2f", opticalSensor.get_hue());

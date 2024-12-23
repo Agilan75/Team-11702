@@ -14,3 +14,7 @@ void Intake::spin_reverse() {
 void Intake::stop() {
     motor.move_voltage(0); 
 }
+
+void Intake::set_speed(int speed) {
+    motor.move_velocity(speed);
+}

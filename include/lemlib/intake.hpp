@@ -29,6 +29,13 @@ public:
      * Stops the intake motor.
      */
     void stop();
+    
+    /**
+     * Adjusts the intake speed.
+     *
+     * @param speed The speed percentage (-100 to 100).
+     */
+    void set_speed(int speed);
 };
 
 #endif // INTAKE_HPP
