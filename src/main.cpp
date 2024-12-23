@@ -119,22 +119,52 @@ void competition_initialize() {}
  * Runs during auto
  */
 void autonomous() {
-    // Log distance sensor data during autonomous
-    pros::lcd::print(7, "Distance during auto: %d mm", distanceSensor.get());
+    pros::lcd::print(0, "Starting Autonomous");
 
-    // Use inertial sensor to check heading
-    if (imu.get_heading() < 90) {
-        pros::lcd::print(8, "Turning robot to heading...");
-        chassis.turnToHeading(90, 1000);
+    // Loop to find and collect multiple red rings
+    for (int ringCount = 0; ringCount < 3; ++ringCount) {
+        pros::lcd::print(1, "Searching for red ring #%d", ringCount + 1);
+
+        // Vision sensor: Locate red object
+        auto redObject = visionSensor.get_by_sig(1); 
+        if (redObject.signature == 1) {
+            pros::lcd::print(2, "Red object found at X: %d, Y: %d", redObject.x_middle_coord, redObject.y_middle_coord);
+
+            // Align the robot to the red object using vision data
+            chassis.turnToPoint(redObject.x_middle_coord, redObject.y_middle_coord, 1000);
+
+            // Distance sensor: Approach the object
+            while (distanceSensor.get() > 150) { 
+                chassis.arcade(50, 0); 
+                pros::lcd::print(3, "Distance: %d mm", distanceSensor.get());
+                pros::delay(50);
+            }
+            chassis.stop(); 
+
+            // Optical sensor: Verify the object is red
+            auto hue = opticalSensor.get_hue();
+            if (hue > 0 && hue < 60) { 
+                pros::lcd::print(4, "Red object confirmed by optical sensor (hue: %.2f)", hue);
+
+                intake.spin_forward();
+                pros::delay(1000); 
+                intake.stop();
+            } else {
+                pros::lcd::print(4, "Color mismatch: Detected hue %.2f", hue);
+            }
+        } else {
+            pros::lcd::print(2, "No red object found. Searching...");
+            chassis.turnToHeading(chassis.getPose().theta + 30, 1000); 
+        }
     }
 
-    // Vision sensor to align to the largest object
-    auto object = visionSensor.get_largest_object();
-    if (object.signature != 0) {
-        pros::lcd::print(9, "Aligning to vision object at X: %d Y: %d", object.x_middle_coord, object.y_middle_coord);
-        chassis.turnToPoint(object.x_middle_coord, object.y_middle_coord, 1000);
-    }
-}
+    // Move to a new location after collecting all rings
+    pros::lcd::print(5, "All rings collected. Moving forward and left.");
+    chassis.moveToPose(24, 0, 0, 2000); 
+    chassis.turnToHeading(90, 1000); 
+    chass
+
+
 
 /**
  * Runs in driver control
