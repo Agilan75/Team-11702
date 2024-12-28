@@ -1,78 +1,158 @@
 #include "pros/imu.hpp"
-#include "pros/imu.h"
 #include <iostream>
-#include <cerrno>
+#include <vector>
+
+#include "pros/adi.hpp"
+#include "pros/serial.hpp" 
 
 namespace pros {
-inline namespace v5 {
 
-// initalizes the Inertial Sensor on the given port
-Imu::Imu(const std::int8_t port) : Device(port) {
-    if (pros::c::imu_reset(port) == PROS_ERR) {
-        std::cerr << "Error initializing Inertial Sensor on port: "
-                  << static_cast<int>(port) << " (errno: " << errno << ")\n";
+Imu Imu::get_imu() {
+    // Check ports 1 through 21 to find an IMU
+    for (uint8_t port = 1; port <= 21; ++port) {
+        if (pros::c::imu_get_status(port) != PROS_ERR) {
+            return Imu(port);
+        }
     }
+
+    std::cerr << "Error: No IMU sensor found\n";
+    return Imu(PROS_ERR);
 }
 
-// resets the Inertial Sensor
-std::int32_t Imu::reset() const {
-    return pros::c::imu_reset(_port);
+std::int32_t Imu::reset(bool blocking) const {
+    return pros::c::imu_reset(this->get_port());
 }
 
-// checks if the sensor is calibrating
-bool Imu::is_calibrating() const {
-    return pros::c::imu_is_calibrating(_port);
+std::int32_t Imu::set_data_rate(std::uint32_t rate) const {
+    return pros::c::imu_set_data_rate(this->get_port(), rate);
 }
 
-// retrieves the current heading of the sensor in degrees
-double Imu::get_heading() const {
-    return pros::c::imu_get_heading(_port);
+std::vector<Imu> Imu::get_all_devices() {
+    std::vector<Imu> devices;
+    // Iterate through all possible ports
+    for (uint8_t port = 1; port <= 21; ++port) {
+        if (pros::c::imu_get_status(port) != PROS_ERR) {
+            devices.emplace_back(port);
+        }
+    }
+    return devices;
 }
 
-// retrieves the total rotation of the sensor in degrees
 double Imu::get_rotation() const {
-    return pros::c::imu_get_rotation(_port);
+    return pros::c::imu_get_rotation(get_port());
 }
 
-// sets the heading of the sensor to a specific value
-std::int32_t Imu::set_heading(const double heading) const {
-    return pros::c::imu_set_heading(_port, heading);
+double Imu::get_heading() const {
+    return pros::c::imu_get_heading(get_port());
 }
 
-// sets the rotation of the sensor to a specific value
-std::int32_t Imu::set_rotation(const double rotation) const {
-    return pros::c::imu_set_rotation(_port, rotation);
+pros::quaternion_s_t Imu::get_quaternion() const {
+    return pros::c::imu_get_quaternion(get_port());
 }
 
-// retrieves acceleration values on x, y, z axes
-imu_accel_s_t Imu::get_accel() const {
-    return pros::c::imu_get_accel(_port);
+pros::euler_s_t Imu::get_euler() const {
+    return pros::c::imu_get_euler(get_port());
 }
 
-// retrieves gyroscope values on x, y, z axes
-imu_gyro_s_t Imu::get_gyro_rate() const {
-    return pros::c::imu_get_gyro_rate(_port);
+double Imu::get_pitch() const {
+    return pros::c::imu_get_pitch(get_port());
 }
 
-// retrieves the internal temperature of the sensor in Celsius
-double Imu::get_temperature() const {
-    return pros::c::imu_get_temperature(_port);
+double Imu::get_roll() const {
+    return pros::c::imu_get_roll(get_port());
 }
 
-// outputs Inertial Sensor details
-std::ostream& operator<<(std::ostream& os, const Imu& imu) {
-    os << "Inertial Sensor [port: " << static_cast<int>(imu.get_port())
-       << ", heading: " << imu.get_heading()
+double Imu::get_yaw() const {
+    return pros::c::imu_get_yaw(get_port());
+}
+
+pros::imu_gyro_s_t Imu::get_gyro_rate() const {
+    return pros::c::imu_get_gyro_rate(get_port());
+}
+
+pros::imu_accel_s_t Imu::get_accel() const {
+    return pros::c::imu_get_accel(get_port());
+}
+
+pros::ImuStatus Imu::get_status() const {
+    auto status = pros::c::imu_get_status(get_port());
+    return static_cast<pros::ImuStatus>(status);
+}
+
+imu_orientation_e_t Imu::get_physical_orientation() const {
+    return pros::c::imu_get_physical_orientation(get_port());
+}
+
+std::int32_t Imu::tare_rotation() const {
+    return pros::c::imu_tare_rotation(get_port());
+}
+
+std::int32_t Imu::tare_heading() const {
+    return pros::c::imu_tare_heading(get_port());
+}
+
+std::int32_t Imu::tare_pitch() const {
+    return pros::c::imu_tare_pitch(get_port());
+}
+
+std::int32_t Imu::tare_roll() const {
+    return pros::c::imu_tare_roll(get_port());
+}
+
+std::int32_t Imu::tare_yaw() const {
+    return pros::c::imu_tare_yaw(get_port());
+}
+
+std::int32_t Imu::tare_euler() const {
+    return pros::c::imu_tare_euler(get_port());
+}
+
+std::int32_t Imu::tare() const {
+    return pros::c::imu_tare(get_port());
+}
+
+std::int32_t Imu::set_heading(const double target) const {
+    return pros::c::imu_set_heading(get_port(), target);
+}
+
+std::int32_t Imu::set_rotation(const double target) const {
+    return pros::c::imu_set_rotation(get_port(), target);
+}
+
+std::int32_t Imu::set_pitch(const double target) const {
+    return pros::c::imu_set_pitch(get_port(), target);
+}
+
+std::int32_t Imu::set_roll(const double target) const {
+    return pros::c::imu_set_roll(get_port(), target);
+}
+
+std::int32_t Imu::set_yaw(const double target) const {
+    return pros::c::imu_set_yaw(get_port(), target);
+}
+
+std::int32_t Imu::set_euler(const pros::euler_s_t target) const {
+    return pros::c::imu_set_euler(get_port(), target);
+}
+
+std::ostream& operator<<(std::ostream& os, const pros::Imu& imu) {
+    os << "Imu [port: " << static_cast<int>(imu.get_port())
        << ", rotation: " << imu.get_rotation()
-       << ", calibrating: " << (imu.is_calibrating() ? "true" : "false")
+       << ", heading: " << imu.get_heading()
+       << ", pitch: " << imu.get_pitch()
+       << ", roll: " << imu.get_roll()
+       << ", yaw: " << imu.get_yaw()
+       << ", gyro rate: {" << imu.get_gyro_rate().x << ", " << imu.get_gyro_rate().y << ", " << imu.get_gyro_rate().z << "}"
+       << ", accel: {" << imu.get_accel().x << ", " << imu.get_accel().y << ", " << imu.get_accel().z << "}"
+       << ", calibrating: " << imu.is_calibrating()
        << "]";
     return os;
 }
 
-// allows creation of an Inertial Sensor using a port number
-const Imu literals::operator"" _imu(const unsigned long long int i) {
-    return Imu(static_cast<std::int8_t>(i));
+namespace literals {
+const pros::Imu operator"" _imu(const unsigned long long int i) {
+    return pros::Imu(static_cast<uint8_t>(i));
 }
+}  // namespace literals
 
-}  // namespace v5
 }  // namespace pros

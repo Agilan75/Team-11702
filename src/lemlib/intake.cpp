@@ -1,4 +1,10 @@
 #include "Intake.hpp"
+#include <iostream>
+#include <vector>
+#include <cerrno>
+
+#include "pros/adi.hpp"
+#include "pros/serial.hpp" 
 
 Intake::Intake(const std::uint8_t port) : motor(port) {
     motor.set_brake_mode(pros::E_MOTOR_BRAKE_COAST); 

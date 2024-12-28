@@ -1,4 +1,10 @@
-#include "Pneumatics.hpp"
+#include "pneumatic.hpp"
+#include <iostream>
+#include <vector>
+#include <cerrno>
+
+#include "pros/adi.hpp"
+#include "pros/serial.hpp" 
 
 Pneumatics::Pneumatics(const char port) : pneumatic(port) {}
 
@@ -8,8 +14,4 @@ void Pneumatics::extend() {
 
 void Pneumatics::retract() {
     pneumatic.set_value(false); 
-}
-
-void Pneumatics::toggle() {
-    pneumatic.set_value(!pneumatic.get_value());
 }

@@ -4,6 +4,9 @@
 #include <vector>
 #include <cerrno>
 
+#include "pros/adi.hpp"
+#include "pros/serial.hpp" 
+
 namespace pros {
 inline namespace v5 {
 
